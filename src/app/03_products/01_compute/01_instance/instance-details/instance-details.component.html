@@ -202,6 +202,24 @@
                         {{ instance.vmi?.status?.interfaces?.[$index]?.ipAddresses?.join(',') }}
                       </span>
 
+                      @let privateIps = instance.vmi?.status?.interfaces?.[$index]?.ipAddresses || [];
+                      @let eip = publicIpFor(privateIps);
+                      @if (eip) {
+                        <span class="d-flex align-items-center">
+                          <strong>Public IP: </strong>
+                          <span class="ml-1">{{ eip.eip?.eip?.status?.ip }}</span>
+                          <span class="label ml-2">{{ eip.exposure }}</span>
+                          <a
+                            class="ml-1 color-primary"
+                            matIconButton
+                            [routerLink]="['/products', 'network', 'eip', 'details', az(), eip.eip.eid]"
+                            aria-label="Go to public IP"
+                            target="_blank">
+                            <mat-icon> open_in_new</mat-icon>
+                          </a>
+                        </span>
+                      }
+
                       <span>
                         <strong>Mount type: </strong>
                         {{ instance.vm?.spec?.template?.spec?.domain?.devices?.interfaces?.[$index]?.model || 'auto' }}

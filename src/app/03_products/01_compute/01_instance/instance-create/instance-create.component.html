@@ -152,7 +152,9 @@
         <ng-template matStepContent>
           <spx-instance-network-create
             [az]="selectedAz()"
+            [instanceName]="firstFormGroup.controls.productName.value || ''"
             (networksChange)="networks = $event"
+            (publicIpChange)="publicIp = $event"
             (validChange)="networksValid = $event"></spx-instance-network-create>
 
           <div class="product-create__step-buttons">

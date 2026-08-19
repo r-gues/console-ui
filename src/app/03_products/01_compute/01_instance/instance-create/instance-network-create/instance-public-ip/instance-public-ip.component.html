@@ -1,0 +1,146 @@
+<div class="info-card">
+  <div class="info-card__title">
+    <div class="d-flex align-items-center gap-2">
+      <div class="mat-icon--with-bg">
+        <mat-icon>public</mat-icon>
+      </div>
+      Public connectivity
+    </div>
+  </div>
+
+  <div class="info-card__content info-card__content--multi-block" [formGroup]="form">
+    @if (nics().length === 0) {
+      <div class="info-card__block">
+        <span><i>Add a network interface first to give this instance a public IP.</i></span>
+      </div>
+    } @else if (blockedReason(); as reason) {
+      <div class="info-card__block">
+        <spx-banner [level]="BannerLevelEnum.Info" multiline>
+          @if (reason === 'no-nat-gateway') {
+            A public IP is allocated from the subnet's NAT gateway, and this subnet does not have one.
+            @if (blockedSubnet(); as subnet) {
+              Enable it on
+              <a [routerLink]="['/products', 'network', 'subnet', 'details', az(), subnet.eid]">
+                {{ subnet.productName || subnet.eid }} </a
+              >, then come back.
+            }
+          } @else {
+            Public IPs are IPv4 only, and this subnet is IPv6 only.
+          }
+        </spx-banner>
+      </div>
+    } @else {
+      <div class="info-card__block">
+        <mat-radio-group class="d-flex flex-column gap-1" formControlName="mode">
+          <mat-radio-button value="none">No public IP</mat-radio-button>
+          <mat-radio-button value="new">New public IP</mat-radio-button>
+          <mat-radio-button value="existing">Use an existing public IP</mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      @if (form.controls.mode.value !== 'none') {
+        @if (eligibleNics().length > 1) {
+          <div class="info-card__block">
+            <mat-form-field class="info-card__item" subscriptSizing="dynamic">
+              <mat-label>Interface</mat-label>
+              <mat-select formControlName="networkOrder">
+                @for (nic of eligibleNics(); track nic.order) {
+                  <mat-option [value]="nic.order">
+                    Interface {{ nic.order }} - {{ nic.subnet.productName || nic.subnet.eid }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        }
+
+        @if (form.controls.mode.value === 'new') {
+          <div class="info-card__block">
+            <mat-form-field class="info-card__item" subscriptSizing="dynamic">
+              <mat-label>Name</mat-label>
+              <input matInput type="text" autocomplete="off" maxlength="63" formControlName="productName"
+                (input)="onNameInput()" />
+            </mat-form-field>
+          </div>
+        } @else {
+          <div class="info-card__block">
+            @if (attachableEips().length > 0) {
+              <mat-form-field class="info-card__item" subscriptSizing="dynamic">
+                <mat-label>Public IP</mat-label>
+                <mat-select formControlName="eipEId">
+                  @for (eip of attachableEips(); track eip.eid) {
+                    <mat-option [value]="eip.eid">
+                      {{ eip.productName || eip.eid }} - {{ eip.eip?.status?.ip }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            } @else {
+              <span>
+                <i>
+                  No unattached public IP on this subnet. You can create one
+                  <a [routerLink]="['/products', 'network', 'eip', 'create']">here</a>.
+                </i>
+              </span>
+            }
+          </div>
+        }
+
+        <div class="info-card__block">
+          <mat-radio-group class="d-flex flex-column gap-1" formControlName="exposure">
+            <mat-radio-button value="full">Full - all ports</mat-radio-button>
+            <mat-radio-button value="ports">Port forwarding</mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+        <div class="info-card__block">
+          @if (form.controls.exposure.value === 'full') {
+            <span><i>The public IP maps 1:1 to this interface.</i></span>
+          } @else {
+            <span><i>Traffic on these external ports is forwarded to this instance.</i></span>
+          }
+        </div>
+
+        @if (form.controls.exposure.value === 'ports') {
+          <div class="info-card__block info-card__block--space-between align-items-center">
+            <span><i>Forwarded ports</i></span>
+            <button matButton="tonal" type="button" (click)="addDnat()"><mat-icon>add</mat-icon> Add port</button>
+          </div>
+          <div class="d-flex flex-column gap-2" formArrayName="dnat">
+            @for (rule of dnat.controls; track rule; let i = $index) {
+              <div class="info-card__block info-card__block--space-evenly align-items-center" [formGroupName]="i">
+                <mat-form-field class="info-card__item" subscriptSizing="dynamic">
+                  <mat-label>External port</mat-label>
+                  <input matInput type="text" autocomplete="off" formControlName="externalPort" placeholder="8080" />
+                </mat-form-field>
+
+                <mat-icon>arrow_right_alt</mat-icon>
+
+                <mat-form-field class="info-card__item" subscriptSizing="dynamic">
+                  <mat-label>Internal port</mat-label>
+                  <input matInput type="text" autocomplete="off" formControlName="internalPort" placeholder="80" />
+                </mat-form-field>
+
+                <mat-form-field class="info-card__item" subscriptSizing="dynamic">
+                  <mat-label>Protocol</mat-label>
+                  <mat-select formControlName="protocol">
+                    <mat-option value="tcp"> TCP </mat-option>
+                    <mat-option value="udp"> UDP </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <button mat-icon-button type="button" (click)="removeDnat(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="info-card__block">
+          <span><i>The address is reserved now, so it is correct even if the instance does not start immediately.</i></span>
+        </div>
+      }
+    }
+  </div>
+</div>

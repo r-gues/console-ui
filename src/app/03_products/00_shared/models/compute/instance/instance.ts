@@ -69,6 +69,8 @@ export class CreateInstance {
   containerDisks?: string[];
   // Optional advanced device/firmware overrides; omit to push no override.
   advanced?: AdvancedOptionsInput;
+  // Optional public IP; omit for a private-only instance.
+  publicIP?: CreateInstancePublicIp;
 }
 
 export class UpdateInstance {
@@ -95,6 +97,33 @@ export interface CreateInstanceCloudInit {
   custom: boolean;
   config?: string;
   bus?: string;
+}
+
+export type PublicIpMode = 'none' | 'new' | 'existing';
+export type PublicIpExposure = 'full' | 'ports';
+
+/**
+ * One forwarded port. There is no internal IP: the platform always uses the
+ * address it reserved for the instance.
+ */
+export interface CreateInstancePublicIpDnat {
+  externalPort: string;
+  internalPort: string;
+  protocol: 'tcp' | 'udp';
+}
+
+/**
+ * Attaches a public IP to one interface at creation time.
+ * Exposure is a choice because a floating IP is 1:1 NAT and cannot carry
+ * per-port rules: it is either the whole address or a set of forwarded ports.
+ */
+export interface CreateInstancePublicIp {
+  mode: PublicIpMode;
+  networkOrder: number;
+  exposure: PublicIpExposure;
+  productName?: string;
+  eipEId?: string;
+  dnat?: CreateInstancePublicIpDnat[];
 }
 
 export interface CreateInstanceNetwork {

@@ -17,6 +17,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import {
   CreateInstanceNetwork,
+  CreateInstancePublicIp,
   NETWORK_MODEL_AUTO,
   NETWORK_MODEL_LIST,
 } from '@products/00_shared/models/compute/instance/instance';
@@ -26,6 +27,8 @@ import { CidrForVersion, CidrNetworkAddress } from '@products/00_shared/utils/ip
 import { StateService } from '@shared/services/state.service';
 import { ipInCidrValidator, ipValidator } from '@shared/utils/validators';
 import { of } from 'rxjs';
+
+import { InstancePublicIpComponent, PublicIpNic } from './instance-public-ip/instance-public-ip.component';
 
 interface NetworkItem {
   subnetId: string;
@@ -46,6 +49,7 @@ interface NetworkItem {
     CdkDrag,
     CdkDragHandle,
     RouterLink,
+    InstancePublicIpComponent,
   ],
   templateUrl: './instance-network-create.component.html',
   styleUrl: './instance-network-create.component.scss',
@@ -71,7 +75,17 @@ export class InstanceNetworkCreateComponent {
    * Initial subnet network list (order is important)
    */
   initList = input<CreateInstanceNetwork[]>();
+  /** Instance name, used to suggest a name for a new public IP. */
+  instanceName = input<string>('');
+  /**
+   * Emit the public IP to attach at creation, or undefined for a private instance
+   */
+  publicIpChange = output<CreateInstancePublicIp | undefined>();
   networkList: ProductSubnet[] = [];
+
+  /** Mirrors networkList into a signal so the public IP card tracks it. */
+  protected nics = signal<PublicIpNic[]>([]);
+  private publicIpValid = true;
 
   protected cidrForVersion = CidrForVersion;
   protected cidrNetworkAddress = CidrNetworkAddress;
@@ -102,7 +116,7 @@ export class InstanceNetworkCreateComponent {
   formIps = this.fb.group({});
 
   constructor() {
-    this.formIps.statusChanges.subscribe(() => this.validChange.emit(this.formIps.valid));
+    this.formIps.statusChanges.subscribe(() => this.emitValid());
 
     effect(() => {
       if (this.az() == null || this.az()) {
@@ -194,7 +208,19 @@ export class InstanceNetworkCreateComponent {
       })
     );
 
-    this.validChange.emit(this.formIps.valid);
+    this.nics.set(this.networkList.map((subnet, order) => ({ order, subnet })));
+
+    this.emitValid();
+  }
+
+  /** The step is valid only when both the interfaces and the public IP are. */
+  protected emitValid() {
+    this.validChange.emit(this.formIps.valid && this.publicIpValid);
+  }
+
+  onPublicIpValidChange(valid: boolean) {
+    this.publicIpValid = valid;
+    this.emitValid();
   }
 
   updateStaticIp(id: string, ip: string, type: 'v4' | 'v6') {

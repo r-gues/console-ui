@@ -12,10 +12,11 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TabsBase } from '@products/00_shared/components/tabs-base/tab-base.component';
-import { ProductInstance, ProductSSH, ProductSubnet } from '@products/00_shared/models/product.model';
+import { ProductEIP, ProductInstance, ProductSSH, ProductSubnet } from '@products/00_shared/models/product.model';
 import { InstanceSnapshotService } from '@products/00_shared/services/instance-snapshot.service';
 import { InstanceService } from '@products/00_shared/services/instance.service';
 import { SshService } from '@products/00_shared/services/ssh.service';
+import { EipService } from '@products/00_shared/services/eip.service';
 import { SubnetService } from '@products/00_shared/services/subnet.service';
 import { isClusterResource } from '@products/00_shared/utils/cluster-utils';
 import { BannerComponent } from '@shared/components/banner/banner.component';
@@ -64,6 +65,7 @@ export class InstanceDetailsComponent extends TabsBase {
   protected permissionSvc = inject(PermissionService);
   protected instanceSvc = inject(InstanceService);
   protected subnetSvc = inject(SubnetService);
+  protected eipSvc = inject(EipService);
   protected instanceSnapshotSvc = inject(InstanceSnapshotService);
   protected dialog = inject(MatDialog);
   protected sshSvc = inject(SshService);
@@ -96,6 +98,7 @@ export class InstanceDetailsComponent extends TabsBase {
   instanceProduct;
   subnetsProduct;
   sshKeysProduct;
+  eipsProduct;
 
   instanceTypeName = computed(() => {
     if (this.instanceProduct.hasValue()) {
@@ -122,6 +125,41 @@ export class InstanceDetailsComponent extends TabsBase {
       return false;
     }
   });
+
+  /**
+   * Public IPs of this AZ indexed by the private address they point at, so an
+   * interface can show the address it is reachable on. A floating IP maps 1:1;
+   * port forwarding shows up through its DNAT rules.
+   */
+  eipByInternalIp = computed(() => {
+    const result = new Map<string, ProductEIP>();
+    for (const eip of this.eipsProduct.value() ?? []) {
+      if (eip.fip?.spec?.internalIp) {
+        result.set(eip.fip.spec.internalIp, eip);
+      }
+      for (const dnat of eip.dnat ?? []) {
+        if (dnat.spec?.internalIp) {
+          result.set(dnat.spec.internalIp, eip);
+        }
+      }
+    }
+    return result;
+  });
+
+  /**
+   * The public IP reaching one of an interface's private addresses, with how it
+   * is exposed.
+   */
+  publicIpFor(privateIps: string[]): { eip: ProductEIP; exposure: string } | undefined {
+    const map = this.eipByInternalIp();
+    for (const ip of privateIps) {
+      const eip = map.get(ip);
+      if (eip) {
+        return { eip, exposure: eip.fip ? '1:1' : 'port forwarding' };
+      }
+    }
+    return undefined;
+  }
 
   networkSubnetsMap = computed(() => {
     const networks = this.instanceProduct.hasValue()
@@ -188,6 +226,18 @@ export class InstanceDetailsComponent extends TabsBase {
         } else {
           return of([]);
         }
+      },
+    });
+
+    this.eipsProduct = rxResource({
+      params: () => this.az(),
+      stream: () => {
+        const org = stateSvc.organization()?.id;
+        const project = stateSvc.project()?.id;
+        if (this.az() && org && project) {
+          return this.eipSvc.listByAZ(org, project, this.az());
+        }
+        return of([] as ProductEIP[]);
       },
     });
 

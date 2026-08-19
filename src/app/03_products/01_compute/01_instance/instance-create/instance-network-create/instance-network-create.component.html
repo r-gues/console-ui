@@ -138,3 +138,10 @@
     </div>
   </div>
 </div>
+
+<spx-instance-public-ip
+  [az]="az()"
+  [nics]="nics()"
+  [instanceName]="instanceName()"
+  (publicIpChange)="publicIpChange.emit($event)"
+  (validChange)="onPublicIpValidChange($event)" />

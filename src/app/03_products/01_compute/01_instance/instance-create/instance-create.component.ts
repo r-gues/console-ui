@@ -20,6 +20,7 @@ import {
   CPU_VALUE_LIST,
   CpuValue,
   CreateInstance,
+  CreateInstancePublicIp,
   CreateInstanceCloudInit,
   CreateInstanceDisk,
   CreateInstanceNetwork,
@@ -133,6 +134,7 @@ export class InstanceCreateComponent {
   sshKeys?: CreateInstanceSsh[];
   containerDisks?: string[];
   advanced?: AdvancedOptionsInput;
+  publicIp?: CreateInstancePublicIp;
 
   labels = signal<string[]>([]);
 
@@ -172,6 +174,9 @@ export class InstanceCreateComponent {
       }
       if (this.containerDisks !== undefined) {
         createInstance.containerDisks = this.containerDisks;
+      }
+      if (this.publicIp) {
+        createInstance.publicIP = this.publicIp;
       }
       if (this.advanced !== undefined) {
         createInstance.advanced = this.advanced;

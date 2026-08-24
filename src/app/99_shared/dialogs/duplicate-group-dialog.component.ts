@@ -82,9 +82,11 @@ export class DuplicateGroupDialog {
     }
   }
 
-  /** `<source> copy`, truncated so it always fits the name limit. */
+  /** `<source> copy`, with the source truncated so the suffix always fits the name limit. */
   private defaultName(): string {
-    return `${this.data.sourceName} copy`.slice(0, MAX_NAME_LENGTH);
+    const suffix = ' copy';
+    const source = this.data.sourceName.slice(0, MAX_NAME_LENGTH - suffix.length).trimEnd();
+    return `${source}${suffix}`;
   }
 
   private nameTakenValidator(control: AbstractControl<string | undefined | null>): ValidationErrors | null {

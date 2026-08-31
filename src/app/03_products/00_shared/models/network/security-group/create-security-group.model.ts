@@ -28,6 +28,7 @@ export interface SecurityGroupCreationSpec {
   target?: LabelSelector;
   ingress?: IngressRule[];
   egress?: EgressRule[];
+  subnetEIds?: string[];
 }
 
 export interface IngressRule {

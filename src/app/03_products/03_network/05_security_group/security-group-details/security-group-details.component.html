@@ -163,6 +163,53 @@
         </div>
       </div>
 
+      @if (sg.securityGroup?.subnetEIds && sg.securityGroup.subnetEIds.length > 0) {
+        <h2>Subnets</h2>
+        <div spxGrid>
+          @for (subnetProduct of subnetDetails(); track subnetProduct.eid) {
+            <div class="product-details__card sg-c2">
+              <h3 class="text-break-all mt-0 mb-1">
+                {{ subnetProduct.productName }}
+                <a
+                  mat-icon-button
+                  class="color-primary"
+                  [routerLink]="['/products', 'network', 'subnet', 'details', subnetProduct.codeAZ, subnetProduct.eid]"
+                  target="_blank">
+                  <mat-icon>open_in_new</mat-icon>
+                </a>
+              </h3>
+              <spx-span-copy class="product-details__card-line" key="Effective ID" [value]="subnetProduct.eid" />
+              @if (subnetProduct.subnet?.spec?.cidrBlock) {
+                <div class="product-details__card-line">
+                  <span class="product-details__card-line-left"><strong>CIDR:</strong></span>
+                  <span class="product-details__card-line-right">{{ subnetProduct.subnet.spec.cidrBlock }}</span>
+                </div>
+              }
+              @if (subnetProduct.subnet?.spec?.gateway) {
+                <div class="product-details__card-line">
+                  <span class="product-details__card-line-left"><strong>Gateway:</strong></span>
+                  <span class="product-details__card-line-right">{{ subnetProduct.subnet.spec.gateway }}</span>
+                </div>
+              }
+              @if (subnetProduct.subnet?.spec?.protocol) {
+                <div class="product-details__card-line">
+                  <span class="product-details__card-line-left"><strong>Protocol:</strong></span>
+                  <span class="product-details__card-line-right">{{ subnetProduct.subnet.spec.protocol }}</span>
+                </div>
+              }
+            </div>
+          }
+          @for (subnetEId of sg.securityGroup.subnetEIds; track subnetEId) {
+            @if (!subnetDetails().find(s => s.eid === subnetEId)) {
+              <div class="product-details__card sg-c2">
+                <h3 class="mt-0 mb-1">Unknown Subnet</h3>
+                <spx-span-copy class="product-details__card-line" key="Effective ID" [value]="subnetEId" />
+              </div>
+            }
+          }
+        </div>
+      }
+
       <h2>Ingress</h2>
       <div spxGrid>
         @let ingressRules = sg.securityGroup?.spec?.ingress;

@@ -26,6 +26,7 @@ import { firstValueFrom } from 'rxjs';
 import { SecurityGroupTargetFormComponent } from '../security-group-form/security-group-target-form/security-group-target-form.component';
 import { SecurityGroupIngressFormComponent } from '../security-group-form/security-group-ingress-form/security-group-ingress-form.component';
 import { SecurityGroupEgressFormComponent } from '../security-group-form/security-group-egress-form/security-group-egress-form.component';
+import { SecurityGroupSubnetFormComponent } from '../security-group-form/security-group-subnet-form/security-group-subnet-form.component';
 import { StepGeneralComponent } from '@products/00_shared/components/forms-step/step-general/step-general.component';
 
 @Component({
@@ -41,6 +42,7 @@ import { StepGeneralComponent } from '@products/00_shared/components/forms-step/
     SecurityGroupTargetFormComponent,
     SecurityGroupIngressFormComponent,
     SecurityGroupEgressFormComponent,
+    SecurityGroupSubnetFormComponent,
     StepGeneralComponent,
   ],
   templateUrl: './security-group-update.component.html',
@@ -75,6 +77,8 @@ export class SecurityGroupUpdateComponent {
 
   egressRules = signal<EgressRule[]>([]);
   isEgressValid = signal(true);
+
+  subnetEIds = signal<string[]>([]);
 
   isLoaded = signal(false);
 
@@ -167,6 +171,10 @@ export class SecurityGroupUpdateComponent {
             }
           }
 
+          if (res.securityGroup!.subnetEIds) {
+            securityGroupSpec.subnetEIds = res.securityGroup!.subnetEIds;
+          }
+
           this.initSpec.set(securityGroupSpec);
           this.isLoaded.set(true);
         }
@@ -192,6 +200,7 @@ export class SecurityGroupUpdateComponent {
           target: this.target(),
           ingress: this.ingressRules(),
           egress: this.egressRules(),
+          subnetEIds: this.subnetEIds(),
         },
       });
 

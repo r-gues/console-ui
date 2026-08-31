@@ -11,6 +11,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProtocolEnum } from '@products/00_shared/models/network/subnet/protocol.enum';
 import { SecurityGroupService } from '@products/00_shared/services/security-group.service';
+import { SubnetService } from '@products/00_shared/services/subnet.service';
+import { ProductSubnet } from '@products/00_shared/models/product.model';
 import { isClusterResource } from '@products/00_shared/utils/cluster-utils';
 import { getProductLabelInfo } from '@products/00_shared/utils/product-label-utils';
 import { BannerComponent } from '@shared/components/banner/banner.component';
@@ -54,6 +56,7 @@ export class SecurityGroupDetailsComponent {
   protected stateSvc = inject(StateService);
   protected permissionSvc = inject(PermissionService);
   protected sgSvc = inject(SecurityGroupService);
+  protected subnetSvc = inject(SubnetService);
   protected clipboard = inject(Clipboard);
   protected router = inject(Router);
 
@@ -100,6 +103,18 @@ export class SecurityGroupDetailsComponent {
     const route = inject(ActivatedRoute);
 
     this.routeParams = toSignal(route.params);
+    this.subnets = rxResource({
+      params: computed(() => [stateSvc.project(), stateSvc.organization(), this.az(), this.sgProduct.value()]),
+      stream: () => {
+        const az = this.az();
+        const subnetEIds = this.sgProduct.value()?.securityGroup?.subnetEIds;
+        if (stateSvc.organization() && stateSvc.project() && az && subnetEIds && subnetEIds.length > 0) {
+          return this.subnetSvc.listByAZ(stateSvc.organization()!.id, stateSvc.project()!.id, az);
+        }
+        return of([] as ProductSubnet[]);
+      },
+    });
+
     this.sgProduct = rxResource({
       params: computed(() => [stateSvc.project(), stateSvc.organization(), this.routeParams()]),
       stream: () => {
@@ -114,6 +129,15 @@ export class SecurityGroupDetailsComponent {
       },
     });
   }
+
+  subnets;
+
+  subnetDetails = computed(() => {
+    const subnetEIds = this.sgProduct.value()?.securityGroup?.subnetEIds;
+    const allSubnets = this.subnets.value();
+    if (!subnetEIds || !allSubnets) return [];
+    return subnetEIds.map(eid => allSubnets.find(s => s.eid === eid)).filter((s): s is ProductSubnet => !!s);
+  });
 
   copy(value: string) {
     this.clipboard.copy(value);

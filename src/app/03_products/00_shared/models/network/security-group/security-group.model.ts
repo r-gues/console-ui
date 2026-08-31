@@ -4,6 +4,7 @@ export interface SecurityGroup {
   metadata: ObjectMeta;
   spec: SecurityGroupSpec;
   description: string;
+  subnetEIds?: string[];
 }
 
 export interface SecurityGroupSpec {

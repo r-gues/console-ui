@@ -82,11 +82,28 @@ export class DuplicateGroupDialog {
     }
   }
 
-  /** `<source> copy`, with the source truncated so the suffix always fits the name limit. */
+  /** `<source> copy`, `<source> copy (2)`, etc. — picks the next available name. */
   private defaultName(): string {
+    const existingNames = new Set(this.data.existingNames);
+    const baseName = this.data.sourceName
+      .replace(/ copy(?: \(\d+\))?$/, '')
+      .trimEnd();
+
     const suffix = ' copy';
-    const source = this.data.sourceName.slice(0, MAX_NAME_LENGTH - suffix.length).trimEnd();
-    return `${source}${suffix}`;
+    const candidate = `${baseName.slice(0, MAX_NAME_LENGTH - suffix.length).trimEnd()}${suffix}`;
+    if (!existingNames.has(candidate)) {
+      return candidate;
+    }
+
+    let counter = 2;
+    while (true) {
+      const numbered = ` copy (${counter})`;
+      const name = `${baseName.slice(0, MAX_NAME_LENGTH - numbered.length).trimEnd()}${numbered}`;
+      if (!existingNames.has(name)) {
+        return name;
+      }
+      counter++;
+    }
   }
 
   private nameTakenValidator(control: AbstractControl<string | undefined | null>): ValidationErrors | null {

@@ -44,6 +44,12 @@
             (targetChange)="target.set($event)"
             (isValid)="isTargetValid.set($event)"></spx-security-group-target-form>
 
+          @if (selectedAz()) {
+            <spx-security-group-subnet-form
+              [az]="selectedAz()!"
+              (subnetEIdsChange)="subnetEIds.set($event)"></spx-security-group-subnet-form>
+          }
+
           <div class="product-create__step-buttons">
             <button matButton="outlined" matStepperPrevious>Back <mat-icon>arrow_back_ios</mat-icon></button>
             <button matButton="filled" matStepperNext>

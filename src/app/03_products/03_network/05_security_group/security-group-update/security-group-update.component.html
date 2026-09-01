@@ -45,6 +45,11 @@
               [initTarget]="initSpec().target"
               (targetChange)="target.set($event)"
               (isValid)="isTargetValid.set($event)"></spx-security-group-target-form>
+
+            <spx-security-group-subnet-form
+              [az]="az"
+              [initSubnetEIds]="initSpec().subnetEIds"
+              (subnetEIdsChange)="subnetEIds.set($event)"></spx-security-group-subnet-form>
           }
 
           <div class="product-create__step-buttons">

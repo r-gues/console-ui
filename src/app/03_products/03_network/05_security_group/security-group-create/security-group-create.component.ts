@@ -19,6 +19,7 @@ import { StateService } from '@shared/services/state.service';
 import { SecurityGroupTargetFormComponent } from '../security-group-form/security-group-target-form/security-group-target-form.component';
 import { SecurityGroupIngressFormComponent } from '../security-group-form/security-group-ingress-form/security-group-ingress-form.component';
 import { SecurityGroupEgressFormComponent } from '../security-group-form/security-group-egress-form/security-group-egress-form.component';
+import { SecurityGroupSubnetFormComponent } from '../security-group-form/security-group-subnet-form/security-group-subnet-form.component';
 import { firstValueFrom } from 'rxjs';
 import { SecurityGroupService } from '@products/00_shared/services/security-group.service';
 
@@ -36,6 +37,7 @@ import { SecurityGroupService } from '@products/00_shared/services/security-grou
     SecurityGroupTargetFormComponent,
     SecurityGroupIngressFormComponent,
     SecurityGroupEgressFormComponent,
+    SecurityGroupSubnetFormComponent,
   ],
   templateUrl: './security-group-create.component.html',
   styleUrl: './security-group-create.component.scss',
@@ -66,6 +68,8 @@ export class SecurityGroupCreateComponent {
   egressRules = signal<EgressRule[]>([]);
   isEgressValid = signal(true);
 
+  subnetEIds = signal<string[]>([]);
+
   async create() {
     if (
       this.firstFormGroup.valid &&
@@ -84,6 +88,7 @@ export class SecurityGroupCreateComponent {
           target: this.target(),
           ingress: this.ingressRules(),
           egress: this.egressRules(),
+          subnetEIds: this.subnetEIds(),
         },
       });
 

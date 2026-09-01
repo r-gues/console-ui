@@ -1,0 +1,27 @@
+<div class="info-card">
+  <div class="info-card__title">
+    <div class="d-flex align-items-center gap-2">
+      <div class="mat-icon--with-bg">
+        <mat-icon>lan</mat-icon>
+      </div>
+      Subnets
+    </div>
+  </div>
+  <div class="info-card__content info-card__content--multi-block">
+    <div class="info-card__block">
+      <span><i>Select up to 10 subnets to associate with this security group (optional).</i></span>
+    </div>
+    <div class="info-card__block">
+      <mat-form-field class="info-card__item info-card__item--form">
+        <mat-label>Subnets</mat-label>
+        <mat-select multiple [value]="selectedSubnetEIds()" (selectionChange)="onSelectionChange($event.value)">
+          @for (subnet of availableSubnets.value(); track subnet.eid) {
+            <mat-option [value]="subnet.eid" [disabled]="isMaxReached() && !selectedSubnetEIds().includes(subnet.eid)">
+              {{ subnet.productName }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</div>

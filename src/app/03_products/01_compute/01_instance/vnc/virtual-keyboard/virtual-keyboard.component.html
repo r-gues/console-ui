@@ -1,0 +1,77 @@
+<div class="virtual-keyboard">
+  <div class="virtual-keyboard__content">
+  <div class="virtual-keyboard__row virtual-keyboard__row--fn">
+    @for (key of functionRow; track key.label) {
+      <button
+        class="virtual-keyboard__key virtual-keyboard__key--fn"
+        [class.virtual-keyboard__key--active]="isModifierActive(key)"
+        [style.flex]="key.width ?? 1"
+        (mousedown)="onKeyClick(key); $event.preventDefault()"
+      >
+        {{ getKeyLabel(key) }}
+      </button>
+    }
+  </div>
+
+  <div class="virtual-keyboard__body">
+    <div class="virtual-keyboard__main">
+      @for (row of rows; track $index) {
+        <div class="virtual-keyboard__row">
+          @for (key of row; track key.label + $index) {
+            <button
+              class="virtual-keyboard__key"
+              [class.virtual-keyboard__key--active]="isModifierActive(key)"
+              [class.virtual-keyboard__key--wide]="(key.width ?? 1) > 1"
+              [style.flex]="key.width ?? 1"
+              (mousedown)="onKeyClick(key); $event.preventDefault()"
+            >
+              {{ getKeyLabel(key) }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="virtual-keyboard__nav-cluster">
+      <div class="virtual-keyboard__nav-row">
+        @for (key of navKeys; track key.label) {
+          <button
+            class="virtual-keyboard__key virtual-keyboard__key--nav"
+            (mousedown)="onKeyClick(key); $event.preventDefault()"
+          >
+            {{ getKeyLabel(key) }}
+          </button>
+        }
+      </div>
+      <div class="virtual-keyboard__arrows-top">
+        <button
+          class="virtual-keyboard__key virtual-keyboard__key--arrow"
+          (mousedown)="onKeyClick(arrowKeys.up); $event.preventDefault()"
+        >
+          {{ arrowKeys.up.label }}
+        </button>
+      </div>
+      <div class="virtual-keyboard__arrows-bottom">
+        <button
+          class="virtual-keyboard__key virtual-keyboard__key--arrow"
+          (mousedown)="onKeyClick(arrowKeys.left); $event.preventDefault()"
+        >
+          {{ arrowKeys.left.label }}
+        </button>
+        <button
+          class="virtual-keyboard__key virtual-keyboard__key--arrow"
+          (mousedown)="onKeyClick(arrowKeys.down); $event.preventDefault()"
+        >
+          {{ arrowKeys.down.label }}
+        </button>
+        <button
+          class="virtual-keyboard__key virtual-keyboard__key--arrow"
+          (mousedown)="onKeyClick(arrowKeys.right); $event.preventDefault()"
+        >
+          {{ arrowKeys.right.label }}
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>

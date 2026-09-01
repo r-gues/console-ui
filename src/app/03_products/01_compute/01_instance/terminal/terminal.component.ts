@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnInit, inject, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CONTROLLER_PATH, WS_PROTOCOL, environment } from '@env/environment';
 import { SESSION_TOKEN_URL } from '@shared/services/auth.service';
@@ -17,17 +17,20 @@ import { firstValueFrom } from 'rxjs';
 })
 export class TerminalComponent implements OnInit {
   private http = inject(HttpClient);
+  private destroyRef = inject(DestroyRef);
 
-  destroyRef = inject(DestroyRef);
+  private terminal?: Terminal;
+  private fitAddon?: FitAddon;
+  private attachAddon?: AttachAddon;
+  private webSocket?: WebSocket;
+  private resizeListener?: () => void;
 
-  orgaId!: string;
-  projectId!: string;
-  term = new Terminal();
-  fitAddon = new FitAddon();
-  elem!: HTMLElement;
+  terminalContainer = viewChild<ElementRef<HTMLElement>>('terminalContainer');
 
-  vmName: string | null;
-  codeAz: string | null;
+  orgaId: string;
+  projectId: string;
+  vmName: string;
+  codeAz: string;
 
   constructor() {
     const route = inject(ActivatedRoute);
@@ -36,55 +39,107 @@ export class TerminalComponent implements OnInit {
     this.projectId = route.snapshot.paramMap.get('projectId') || '';
     this.codeAz = route.snapshot.paramMap.get('az') || '';
     this.vmName = route.snapshot.paramMap.get('productId') || '';
-    this.term.loadAddon(this.fitAddon);
+
+    this.destroyRef.onDestroy(() => this.cleanup());
   }
 
   ngOnInit() {
     if (this.vmName) {
       this.initTerm();
     } else {
-      console.log('Failed to initialize connection');
+      console.error('Failed to initialize terminal: missing VM name');
     }
   }
 
   async initTerm() {
-    const terminal = new Terminal();
-    const fitAddon = new FitAddon();
-    terminal.loadAddon(fitAddon);
-    terminal.open(document.getElementById('terminal')!);
-    fitAddon.fit();
+    const container = this.terminalContainer()?.nativeElement;
+    if (!container) {
+      console.error('Terminal container element not found');
+      return;
+    }
 
-    const res = await firstValueFrom(this.http.get<Session>(SESSION_TOKEN_URL, { withCredentials: true }));
+    this.terminal = new Terminal();
+    this.fitAddon = new FitAddon();
+    this.terminal.loadAddon(this.fitAddon);
+    this.terminal.open(container);
+    this.fitAddon.fit();
+
+    // Disable OSC 8 hyperlink rendering to prevent dashed underlines
+    // that break the display (e.g. with `systemctl status` output)
+    this.terminal.parser.registerOscHandler(8, () => true);
+
+    let res: Session;
+    try {
+      res = await firstValueFrom(this.http.get<Session>(SESSION_TOKEN_URL, { withCredentials: true }));
+    } catch (err) {
+      console.error('Failed to retrieve session token', err);
+      this.terminal.writeln('Error: Unable to authenticate. Please refresh the page.');
+      return;
+    }
+
     const accessToken = res.session;
-
-    console.log(
-      `${WS_PROTOCOL}${environment.apiUrl}/${this.orgaId}${CONTROLLER_PATH}/${this.codeAz}/${this.projectId}/instance/${this.vmName}/serial`
-    );
-
-    const webSocket = new WebSocket(
+    const wsUrl =
       `${WS_PROTOCOL}${environment.apiUrl}/${this.orgaId}${CONTROLLER_PATH}/${this.codeAz}/${this.projectId}/instance/${this.vmName}/serial?bearer=` +
-        accessToken
-    );
+      accessToken;
+
+    this.webSocket = new WebSocket(wsUrl);
 
     const sendSize = () => {
-      const windowSize = { high: terminal.rows, width: terminal.cols };
-      const blob = new Blob([JSON.stringify(windowSize)], {
-        type: 'application/json',
-      });
-      webSocket.send(blob);
+      if (this.webSocket?.readyState === WebSocket.OPEN && this.terminal) {
+        const windowSize = { high: this.terminal.rows, width: this.terminal.cols };
+        const blob = new Blob([JSON.stringify(windowSize)], {
+          type: 'application/json',
+        });
+        this.webSocket.send(blob);
+      }
     };
 
-    webSocket.onopen = sendSize;
+    this.webSocket.onopen = () => {
+      sendSize();
 
-    const resizeScreen = () => {
-      fitAddon.fit();
+      this.attachAddon = new AttachAddon(this.webSocket!);
+      this.terminal!.loadAddon(this.attachAddon);
+    };
+
+    this.webSocket.onerror = event => {
+      console.error('WebSocket error:', event);
+      this.terminal?.writeln('\r\nConnection error. Please refresh the page.');
+    };
+
+    this.webSocket.onclose = event => {
+      if (!event.wasClean) {
+        console.error('WebSocket closed unexpectedly:', event.code, event.reason);
+        this.terminal?.writeln('\r\nConnection lost. Please refresh the page.');
+      }
+    };
+
+    this.resizeListener = () => {
+      this.fitAddon?.fit();
       sendSize();
     };
-    window.addEventListener('resize', resizeScreen, false);
+    window.addEventListener('resize', this.resizeListener);
+  }
 
-    const attachAddon = new AttachAddon(webSocket);
-    terminal.loadAddon(attachAddon);
+  private cleanup() {
+    if (this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+      this.resizeListener = undefined;
+    }
 
-    setTimeout(() => window.resizeBy(1, 1), 200);
+    this.attachAddon?.dispose();
+    this.attachAddon = undefined;
+
+    if (this.webSocket) {
+      if (this.webSocket.readyState === WebSocket.OPEN || this.webSocket.readyState === WebSocket.CONNECTING) {
+        this.webSocket.close();
+      }
+      this.webSocket = undefined;
+    }
+
+    this.fitAddon?.dispose();
+    this.fitAddon = undefined;
+
+    this.terminal?.dispose();
+    this.terminal = undefined;
   }
 }

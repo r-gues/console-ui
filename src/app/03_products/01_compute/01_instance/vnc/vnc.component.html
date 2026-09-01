@@ -7,8 +7,18 @@
     <div class="vnc__header-actions">
       <button matButton="outlined" class="vnc__header-paste" (click)="paste()">Coller</button>
       <button matButton="outlined" class="vnc__header-ctrlAltDel" (click)="sendCtrlAltDel()">Ctrl+Alt+Del</button>
+      <button
+        matIconButton
+        (click)="toggleVirtualKeyboard()"
+        [attr.aria-label]="showVirtualKeyboard() ? 'Hide virtual keyboard' : 'Show virtual keyboard'">
+        <mat-icon>keyboard</mat-icon>
+      </button>
     </div>
   </div>
 
-  <div class="vnc__screen" id="screen"></div>
+  <div class="vnc__screen" #screen></div>
+
+  @if (showVirtualKeyboard()) {
+    <spx-virtual-keyboard (keyPress)="onVirtualKeyPress($event)" />
+  }
 </div>

@@ -11,10 +11,14 @@
   <ng-container matColumnDef="az">
     <mat-header-cell *matHeaderCellDef mat-sort-header>AZ</mat-header-cell>
     <mat-cell *matCellDef="let el" [class.mat-column-az--dr]="el.isDR">
-      <img
-        class="product-list__az-icon"
-        [src]="getAzLogoUrl(el.data.codeAZ)"
-        [alt]="el.data.codeAZ + 'icon'" />
+      @if (getAzLogoUrl(el.data.codeAZ)) {
+        <img
+          class="product-list__az-icon"
+          [src]="getAzLogoUrl(el.data.codeAZ)"
+          [alt]="el.data.codeAZ + 'icon'" />
+      } @else {
+        <span>{{ el.data.codeAZ }}</span>
+      }
     </mat-cell>
   </ng-container>
 

@@ -25,7 +25,7 @@ export interface ArgoCdLink {
 export interface AZ {
   code: string;
   name: string;
-  logoUrl: string;
+  logoUrl?: string;
 }
 
 export class Product {

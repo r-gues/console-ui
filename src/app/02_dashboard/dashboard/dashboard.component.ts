@@ -9,6 +9,7 @@ import { StateService } from '@shared/services/state.service';
 import { ChangelogComponent } from '../changelog/changelog.component';
 import { LocalStorageService, THEME_KEY } from '@shared/services/local-storage.service';
 import { GridDirective } from '@shared/directives/grid.directive';
+import { Announcement, environment } from '@env/environment';
 
 @Component({
   selector: 'spx-dashboard',
@@ -29,5 +30,20 @@ export class DashboardComponent {
   protected screenSvc = inject(ScreenService);
   protected lss = inject(LocalStorageService);
 
+  protected announcement: Announcement | undefined = environment.announcement;
+
   isDarkTheme = computed(() => this.lss.getValue(THEME_KEY)() === 'true');
+
+  protected announcementText = computed(() => this.announcement?.longText ?? this.announcement?.text ?? '');
+
+  protected severityLabel = computed(() => {
+    switch (this.announcement?.severity) {
+      case 'warn':
+        return 'Warning';
+      case 'error':
+        return 'Error';
+      default:
+        return 'Info';
+    }
+  });
 }

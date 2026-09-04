@@ -22,6 +22,15 @@ data:
         { icon: {{ $val.icon | quote }}, text: {{ $val.text | quote }}, url: {{ $val.url | quote }} },
         {{- end }}
       ],
+      {{- if .Values.config.announcement.text }}
+      announcement: {
+        text: {{ .Values.config.announcement.text | quote }},
+        {{- if .Values.config.announcement.longText }}
+        longText: {{ .Values.config.announcement.longText | quote }},
+        {{- end }}
+        severity: {{ .Values.config.announcement.severity | quote }},
+      },
+      {{- end }}
     };
   {{- if .Values.config.themeOverride }}
   theme-override.css: |-

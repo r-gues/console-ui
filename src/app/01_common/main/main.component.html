@@ -1,4 +1,12 @@
-<div class="app" [class.smallScreen]="!screenSvc.isWeb()">
+<div class="app" [class.smallScreen]="!screenSvc.isWeb()" [class.app--with-banner]="showBanner()">
+  @if (showBanner()) {
+    <div class="announcement-banner announcement-banner--{{ announcement!.severity }}">
+      <span class="announcement-banner__text">{{ announcement!.text }}</span>
+      <button class="announcement-banner__close" mat-icon-button (click)="closeBanner()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
   <mat-sidenav-container class="w-100 h-100">
     <mat-sidenav
       class="sidenav"

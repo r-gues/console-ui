@@ -5,6 +5,12 @@ export interface HelpLink {
   url: string;
 }
 
+export interface Announcement {
+  text: string;
+  longText?: string;
+  severity: 'info' | 'warn' | 'error';
+}
+
 // this interface is just to making things more typed
 interface Environment {
   production: boolean;
@@ -15,6 +21,7 @@ interface Environment {
   sessionAutoRenew: number;
   supportEmail: string;
   helpLinks?: HelpLink[];
+  announcement?: Announcement;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

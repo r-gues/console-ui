@@ -1,9 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ConfirmData, ConfirmDialog } from '@shared/dialogs/confirm-dialog/confirm-dialog.component';
+import { LocalStorageService, ANNOUNCEMENT_DISMISSED_KEY } from '@shared/services/local-storage.service';
 import { ScreenService } from '@shared/services/screen.service';
+import { Announcement, environment } from '@env/environment';
 import { ContextSelectorComponent } from '../context-selector/context-selector.component';
 import { HeaderComponent } from '../header/header.component';
 import { SidenavComponent } from '../sidenav/sidenav.component';
@@ -26,4 +30,32 @@ import { SidenavComponent } from '../sidenav/sidenav.component';
 export class MainComponent {
   protected router = inject(Router);
   protected screenSvc = inject(ScreenService);
+  private lss = inject(LocalStorageService);
+  private dialog = inject(MatDialog);
+
+  protected announcement: Announcement | undefined = environment.announcement;
+
+  protected bannerDismissed = computed(() => {
+    if (!this.announcement) return true;
+    return this.lss.getValue(ANNOUNCEMENT_DISMISSED_KEY)() === this.announcement.text;
+  });
+
+  protected showBanner = computed(() => !!this.announcement && !this.bannerDismissed());
+
+  protected closeBanner(): void {
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Dismiss announcement',
+        content: 'Are you sure you want to dismiss this announcement? This information will still be available in the dashboard.',
+        confirmBtn: 'Dismiss',
+        cancelBtn: 'Cancel',
+      } as ConfirmData,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.announcement) {
+        this.lss.setValue(ANNOUNCEMENT_DISMISSED_KEY, this.announcement.text);
+      }
+    });
+  }
 }

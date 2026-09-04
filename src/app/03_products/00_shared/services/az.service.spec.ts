@@ -37,5 +37,10 @@ describe('AZService', () => {
     it('should return an empty string when AZ list is empty', () => {
       expect(AZService.getLogoUrl('az1', [])).toBe('');
     });
+
+    it('should return an empty string when AZ has no logoUrl', () => {
+      const azListNoLogo: AZ[] = [{ code: 'az1', name: 'Zone 1' }];
+      expect(AZService.getLogoUrl('az1', azListNoLogo)).toBe('');
+    });
   });
 });

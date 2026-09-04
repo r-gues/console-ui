@@ -5,6 +5,18 @@
     </div>
 
     <div id="dashboard__main">
+      @if (announcement) {
+        <div class="dashboard__announcement">
+          <div class="dashboard__announcement-title">
+            <span>Announcement</span>
+            <span class="dashboard__announcement-title-value">{{ severityLabel() }}</span>
+          </div>
+          <div class="dashboard__announcement-content">
+            {{ announcementText() }}
+          </div>
+        </div>
+      }
+
       <div spxGrid [small]="true">
         <div class="dashboard__card sg-c1 sg-r1">
           <div class="mat-icon--with-bg--large"><mat-icon>bolt</mat-icon></div>

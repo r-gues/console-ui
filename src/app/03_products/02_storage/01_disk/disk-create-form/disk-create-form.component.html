@@ -19,10 +19,12 @@
           @for (az of stateSvc.azList(); track $index) {
             <mat-option [value]="az.code">
               <div class="d-flex align-items-center gap-2">
-                <img
-                  class="product-create__az-icon"
-                  [src]="az.logoUrl"
-                  [alt]="az.code + 'icon'" />
+                @if (az.logoUrl) {
+                  <img
+                    class="product-create__az-icon"
+                    [src]="az.logoUrl"
+                    [alt]="az.code + 'icon'" />
+                }
                 <span> {{ az.name }} </span>
               </div>
             </mat-option>

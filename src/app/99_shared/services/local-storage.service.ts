@@ -31,6 +31,8 @@ export const KAAS_REFRESH_KEY = 'kaas_refresh';
 
 export const SSH_REFRESH_KEY = 'ssh_refresh';
 
+export const ANNOUNCEMENT_DISMISSED_KEY = 'announcement_dismissed';
+
 @Injectable({
   providedIn: 'root',
 })

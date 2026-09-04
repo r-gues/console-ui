@@ -23,6 +23,17 @@ describe('Product Model', () => {
 
       expect(az.logoUrl).toBe('/api/v1/az/az2/logo');
     });
+
+    it('should allow logoUrl to be undefined', () => {
+      const az: AZ = {
+        code: 'az3',
+        name: 'Availability Zone 3',
+      };
+
+      expect(az.logoUrl).toBeUndefined();
+      expect(az.code).toBe('az3');
+      expect(az.name).toBe('Availability Zone 3');
+    });
   });
 
   describe('Product class', () => {

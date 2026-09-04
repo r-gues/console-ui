@@ -104,4 +104,31 @@
       position: relative;
     }
   }
+
+  &__announcement {
+    display: flex;
+    flex-direction: column;
+
+    border: 1px solid var(--stroke-default);
+    border-radius: var(--br-medium);
+    background-color: var(--block);
+
+    &-title {
+      display: flex;
+      padding: 12px 16px;
+      height: 24px;
+
+      justify-content: space-between;
+      font: var(--mat-sys-title-medium-prominent);
+      border-bottom: 1px solid var(--stroke-default);
+
+      &-value {
+        font: var(--mat-sys-body-large-prominent);
+      }
+    }
+
+    &-content {
+      padding: 16px;
+    }
+  }
 }

@@ -54,6 +54,19 @@ config:
       text: "Documentation"
       url: "https://docs.superphenix.net"
 
+  # Optional: Announcement banner configuration.
+  # If set, a banner is displayed at the top of the page and an announcement block appears on the dashboard.
+  # Properties:
+  #   text: The short text displayed in the banner (required).
+  #   longText: A longer description displayed in the dashboard block (optional, falls back to text).
+  #   severity: Display severity — "info", "warn", or "error" (required).
+  # Example:
+  #   announcement:
+  #     text: "Scheduled maintenance on Sept 10"
+  #     longText: "A scheduled maintenance window is planned for September 10, 2026 from 02:00 to 06:00 UTC."
+  #     severity: "info"
+  announcement: {}
+
   # Optional: Override the built-in theme-override.css
   # If empty, the built-in theme-override.css from the Docker image is used.
   # If set, it replaces the built-in file via configmap mount.

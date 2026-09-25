@@ -2,13 +2,13 @@ import { Component, computed, inject, signal, WritableSignal } from '@angular/co
 import { DomSanitizer } from '@angular/platform-browser';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductListFilterComponent } from '@products/00_shared/components/product-list-filter/product-list-filter.component';
 import { ProductKaaS } from '@products/00_shared/models/product.model';
@@ -37,9 +37,9 @@ interface ProductKaaSItem {
     MatIconModule,
     MatButtonModule,
     RouterLink,
-    MatChipsModule,
     MatMenuModule,
     MatDividerModule,
+    MatTooltipModule,
     ContentHeaderComponent,
     ProductListFilterComponent,
     ProductTableWrapperComponent,
@@ -70,7 +70,7 @@ export class KaasListComponent {
   );
   canProjectArgoCdRead = computed(() => this.permissionSvc.permissions().includes(PermissionsEnum.ProjectArgoCdRead));
 
-  displayedColumns: string[] = ['az', 'id', 'name', 'gitops', 'version', 'actions'];
+  displayedColumns: string[] = ['az', 'id', 'name', 'gitops', 'actions'];
 
   kaasProduct;
 

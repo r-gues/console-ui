@@ -12,7 +12,7 @@ export class InstanceSnapshotService extends BaseService<ProductInstanceSnapshot
 
   restore(orgaId: string, projectId: string, az: string, effectiveId: string) {
     return this.http
-      .get(`${this.getPath(orgaId, projectId, az)}/${effectiveId}/restore`)
+      .post(`${this.getPath(orgaId, projectId, az)}/${effectiveId}/restore`, null)
       .pipe(productOnceHandler(this.snackbar));
   }
 

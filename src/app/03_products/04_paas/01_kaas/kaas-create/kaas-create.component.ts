@@ -34,7 +34,7 @@ import { InstanceService } from '@products/00_shared/services/instance.service';
 import { KaasService } from '@products/00_shared/services/kaas.service';
 import { SubnetService } from '@products/00_shared/services/subnet.service';
 import { generateShortId, isVersionAtLeast } from '@products/00_shared/utils/cluster-utils';
-import { NODE_ROLE_MAX_LENGTH, nodeRoleValidator } from '../00_shared/node-group-form/node-role.validator';
+import { nodeRoleValidator } from '../00_shared/node-group-form/node-role.validator';
 import { ContentHeaderComponent } from '@shared/components/content-header/content-header.component';
 import { StateService } from '@shared/services/state.service';
 import { catchError, firstValueFrom, of } from 'rxjs';
@@ -286,7 +286,7 @@ export class KaasCreateComponent {
   ) {
     return this.fb.group({
       name: this.fb.nonNullable.control(name, Validators.required),
-      nodeRole: this.fb.nonNullable.control(nodeRole, [Validators.maxLength(NODE_ROLE_MAX_LENGTH), nodeRoleValidator]),
+      nodeRole: this.fb.nonNullable.control(nodeRole, nodeRoleValidator),
       replicas: this.fb.nonNullable.control(replicas, Validators.required),
       cpu: this.fb.nonNullable.control<CpuValue>(cpu, Validators.required),
       memory: this.fb.nonNullable.control<MemoryValue>(memory, Validators.required),
